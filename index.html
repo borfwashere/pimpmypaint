@@ -2,13 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <link rel="icon" href="data:,">
-  
-  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src * 'unsafe-inline' 'unsafe-eval' data: blob:; img-src * data: blob:; style-src * 'unsafe-inline';">
-
-  <title>pimpmypaint 3.2</title>
-  
+  <title>pimpmypaint</title>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.1.2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.1/p5.min.js"></script>
   <script src="./utils.js"></script>
@@ -16,40 +10,75 @@
 
   <style>
     :root { --win-bg: #008080; --win-gray: #c0c0c0; --win-blue: #000080; --win-light: #ffffff; --win-shadow: #808080; }
-    * { user-select: none; -webkit-user-drag: none; cursor: default; touch-action: none; box-sizing: border-box; }
-    body { background: var(--win-bg); font-family: "MS Sans Serif", Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow: hidden; }
     
-    .window { background: var(--win-gray); border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); width: 940px; max-width: 98vw; padding: 2px; box-shadow: 2px 2px 10px rgba(0,0,0,0.5); }
+    * { user-select: none; -webkit-user-drag: none; cursor: default; }
+    
+    body { 
+      background: var(--win-bg); 
+      font-family: "MS Sans Serif", Arial, sans-serif; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      height: 100vh; 
+      margin: 0; 
+      overflow: hidden; 
+    }
+    
+    .window { 
+      background: var(--win-gray); 
+      border: 2px solid; 
+      border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); 
+      width: 940px; 
+      padding: 2px; 
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.5); 
+    }
+    
     .title-bar { background: var(--win-blue); color: white; padding: 3px 6px; display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; }
-    
-    .toolbar-main { display: flex; align-items: center; gap: 8px; padding: 8px; border-bottom: 2px solid var(--win-shadow); background: #d6d6d6; flex-wrap: wrap; }
+    .toolbar-main { display: flex; align-items: center; gap: 12px; padding: 8px; border-bottom: 2px solid var(--win-shadow); background: #d6d6d6; flex-wrap: wrap; }
     .color-palette { display: flex; gap: 2px; border: 2px inset white; padding: 2px; background: #999; }
     .color-column { display: flex; flex-direction: column; gap: 2px; }
     .color-swatch { width: 18px; height: 18px; border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); cursor: pointer; }
     .color-swatch.active { border-color: black; outline: 1px solid white; }
-    
     .tool-group { display: flex; border: 2px inset white; padding: 2px; gap: 2px; background: var(--win-gray); }
     .tool-btn { width: 34px; height: 34px; border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); background: var(--win-gray); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
     .tool-btn.active { border-color: var(--win-shadow) var(--win-light) var(--win-light) var(--win-shadow); background: #e0e0e0; }
-    
-    .control-panel { display: flex; align-items: center; gap: 5px; border: 1px inset white; padding: 4px; background: var(--win-gray); font-size: 10px; }
-    .workspace { display: flex; gap: 15px; padding: 15px; justify-content: center; flex-wrap: wrap; }
+    .control-panel { display: flex; align-items: center; gap: 8px; border: 1px inset white; padding: 4px 8px; background: var(--win-gray); font-size: 11px; }
+    .workspace { display: flex; gap: 15px; padding: 15px; justify-content: center; }
     .sub-window { background: var(--win-gray); border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); width: 270px; }
     .sub-title { background: #808080; color: white; font-size: 11px; padding: 2px 5px; font-weight: bold; }
-    
     #canvasContainer, #output { width: 256px; height: 256px; background: white; border: 2px inset white; margin: 5px auto; overflow: hidden; position: relative;}
-    #output img { width: 256px; height: 256px; display: block; }
+    #output img { width: 256px; height: 256px; }
     
+    /* Barra de estado con solo versión a la derecha */
+    .status-bar { 
+      border-top: 1px solid var(--win-shadow); 
+      padding: 2px 5px; 
+      font-size: 11px; 
+      display: flex; 
+      justify-content: flex-end; 
+      height: 16px;
+    }
+
     button.win98-btn { padding: 4px 12px; font-family: "MS Sans Serif"; font-size: 11px; background: var(--win-gray); border: 2px solid; border-color: white #808080 #808080 white; cursor: pointer; }
     .music-btn { background: #ff00ff !important; color: white; font-weight: bold; }
-    
-    @media (max-width: 600px) { .workspace { flex-direction: column; align-items: center; padding: 5px; } .toolbar-main { justify-content: center; } body { overflow-y: auto; align-items: flex-start; } }
   </style>
+
+  <script>
+    // PROTOCOLO DE SEGURIDAD
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.onkeydown = function(e) {
+      if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
+    };
+  </script>
 </head>
 <body>
 
 <div class="window">
-  <div class="title-bar"><span>pimpmypaint 3.2</span></div>
+  <div class="title-bar">
+    <span>pimpmypaint</span>
+    <div style="display:flex; gap:2px;"><button style="padding:0 3px;">X</button></div>
+  </div>
+
   <div class="toolbar-main">
     <div class="color-palette">
       <div class="color-column">
@@ -60,6 +89,7 @@
         <div class="color-swatch" id="sw-blue" onclick="setColor('#0000ff', 'sw-blue')" style="background:#0000ff"></div>
         <div class="color-swatch" id="sw-green" onclick="setColor('#00ff00', 'sw-green')" style="background:#00ff00"></div>
       </div>
+      <div class="color-column"><div class="color-swatch" id="sw-white" onclick="setColor('#ffffff', 'sw-white')" style="background:#ffffff"></div></div>
     </div>
 
     <div class="tool-group">
@@ -67,20 +97,20 @@
       <button class="tool-btn" id="btn-circle" onclick="setTool('circle')">⚪</button>
       <button class="tool-btn" id="btn-triangle" onclick="setTool('triangle')">▲</button>
       <button class="tool-btn" id="btn-brush" onclick="setTool('brush')">🖌️</button>
-      <button class="tool-btn" id="btn-eraser" onclick="setTool('eraser')">🧹</button>
+      <button class="tool-btn" id="btn-eraser" onclick="activateEraser()">🧹</button>
     </div>
 
     <div class="control-panel">
-      <label for="globalSize">Grosor:</label>
+      <label>Grosor:</label>
       <input type="number" id="globalSize" value="3" min="1" max="25">
-      <label for="hasBorder">| Borde:</label>
+      <label>| Borde:</label>
       <input type="checkbox" id="hasBorder" checked onclick="toggleBorder()">
-      <input type="color" id="borderColor" value="#000000" style="width:20px;height:20px;padding:0;border:none;">
+      <input type="color" id="borderColor" value="#000000">
     </div>
     
     <div style="display:flex; gap:5px; margin-left: auto;">
         <button id="musicToggle" onclick="toggleMusic()" class="win98-btn music-btn">MUSIC: OFF</button>
-        <button onclick="renderPikachu()" class="win98-btn" style="background: #ffff00 !important; font-weight: bold;">TRANSFORMAR!</button>
+        <button onclick="renderPikachu()" class="win98-btn" style="font-weight: bold; background: #ffff00 !important;">TRANSFORMAR!</button>
         <button onclick="clearCanvas()" class="win98-btn">LIMPIAR</button>
     </div>
   </div>
@@ -89,18 +119,23 @@
     <div class="sub-window"><div class="sub-title">Dibujo</div><div id="canvasContainer"></div></div>
     <div class="sub-window"><div class="sub-title">Salida</div><div id="output"></div></div>
   </div>
+
+  <div class="status-bar">
+    <span>v3.2</span>
+  </div>
 </div>
 
 <script>
-  // Variables Globales
   let edges2pikachu, modelReady = false;
   let currentColor = '#000000', currentTool = 'rect', shapes = [];
   let isDragging = false, startX, startY;
   const SIZE = 256;
   let globalHasBorder = true;
 
-  // --- AUDIO ENGINE ---
-  let audioCtx = null, isPlaying = false, masterGain = null; 
+  // --- AUDIO ---
+  let audioCtx = null;
+  let isPlaying = false;
+  let masterGain = null; 
   const scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
 
   function toggleMusic() {
@@ -110,11 +145,15 @@
         masterGain.gain.setValueAtTime(0.1, audioCtx.currentTime); 
         masterGain.connect(audioCtx.destination);
     }
-    audioCtx.resume().then(() => {
-      isPlaying = !isPlaying;
-      document.getElementById('musicToggle').innerText = isPlaying ? "MUSIC: ON" : "MUSIC: OFF";
-      if(isPlaying) playBaseMelody();
-    });
+    if (!isPlaying) {
+      isPlaying = true;
+      document.getElementById('musicToggle').innerText = "MUSIC: ON";
+      audioCtx.resume();
+      playBaseMelody();
+    } else {
+      isPlaying = false;
+      document.getElementById('musicToggle').innerText = "MUSIC: OFF";
+    }
   }
 
   function playBaseMelody() {
@@ -123,13 +162,13 @@
     masterGain.gain.setTargetAtTime(targetVol, audioCtx.currentTime, 0.1);
     const freq = scale[Math.floor(Math.random() * scale.length)];
     triggerSynth(freq, 'triangle', 0.5, 0.4, true); 
-    setTimeout(playBaseMelody, Math.random() * 500 + 250); 
+    setTimeout(playBaseMelody, random([250, 500, 750])); 
   }
 
   function playDrawingNote() {
     if (!isPlaying || !audioCtx) return;
     const noteIdx = Math.floor(map(mouseY, SIZE, 0, 0, scale.length - 1));
-    const freq = (scale[noteIdx] || 261.63) * 2; 
+    const freq = scale[noteIdx] * 2; 
     triggerSynth(freq, 'sine', 0.01, 0.1, false); 
   }
 
@@ -144,20 +183,16 @@
     osc.connect(gain);
     if(isBackground) gain.connect(masterGain);
     else gain.connect(audioCtx.destination);
-    osc.start(); osc.stop(audioCtx.currentTime + duration);
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
   }
 
-  // --- LÓGICA DE DIBUJO (p5.js) ---
+  // --- LÓGICA ---
   function setup() {
     const canvas = createCanvas(SIZE, SIZE);
     canvas.parent('canvasContainer');
     background(255);
-    
-    // Inicialización de Pix2Pix
-    edges2pikachu = new Pix2pix('./models/edges2pikachu_AtoB.pict', () => { 
-      modelReady = true; 
-      console.log("IA Lista para transformar.");
-    });
+    edges2pikachu = new Pix2pix('./models/edges2pikachu_AtoB.pict', () => { modelReady = true; });
   }
 
   function draw() {
@@ -174,14 +209,16 @@
       }
     });
 
-    if (isDragging && currentTool !== 'brush' && currentTool !== 'eraser') {
+    if (isDragging) {
       let sz = parseInt(document.getElementById('globalSize').value);
-      if (globalHasBorder) { stroke(document.getElementById('borderColor').value); strokeWeight(sz); } else { noStroke(); }
-      fill(currentColor);
-      let w = mouseX - startX, h = mouseY - startY;
-      if (currentTool === 'rect') rect(startX, startY, w, h);
-      else if (currentTool === 'circle') ellipse(startX + w/2, startY + h/2, w, h);
-      else if (currentTool === 'triangle') triangle(startX + w/2, startY, startX, startY + h, startX + w, startY + h);
+      if (currentTool !== 'brush' && currentTool !== 'eraser') {
+        if (globalHasBorder) { stroke(document.getElementById('borderColor').value); strokeWeight(sz); } else { noStroke(); }
+        fill(currentColor);
+        let w = mouseX - startX, h = mouseY - startY;
+        if (currentTool === 'rect') rect(startX, startY, w, h);
+        else if (currentTool === 'circle') ellipse(startX + w/2, startY + h/2, w, h);
+        else if (currentTool === 'triangle') triangle(startX + w/2, startY, startX, startY + h, startX + w, startY + h);
+      }
     }
   }
 
@@ -198,7 +235,7 @@
   function mouseDragged() { if (isDragging && (currentTool === 'brush' || currentTool === 'eraser')) addPoint(); }
   function mouseReleased() { 
     if (isDragging && currentTool !== 'brush' && currentTool !== 'eraser') { 
-      shapes.push({ 
+      shapes.push({
         x: startX, y: startY, w: mouseX - startX, h: mouseY - startY, 
         c: currentColor, t: currentTool, hasB: globalHasBorder, 
         bc: document.getElementById('borderColor').value, 
@@ -208,20 +245,15 @@
     } 
     isDragging = false; 
   }
-
-  // Soporte táctil
-  function touchStarted() { mousePressed(); return false; }
-  function touchMoved() { mouseDragged(); return false; }
-  function touchEnded() { mouseReleased(); return false; }
   
-  // Controles UI
   function setColor(c, id) { currentColor = c; document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
   function setTool(t) { currentTool = t; document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active')); document.getElementById('btn-' + t).classList.add('active'); }
   function toggleBorder() { globalHasBorder = document.getElementById('hasBorder').checked; }
-  function clearCanvas() { shapes = []; document.getElementById('output').innerHTML = ''; background(255); }
+  function activateEraser() { setTool('eraser'); }
+  function clearCanvas() { shapes = []; document.getElementById('output').innerHTML = ''; }
 
   async function renderPikachu() {
-    if (!modelReady) { alert("Cargando cerebro de IA..."); return; }
+    if (!modelReady) return;
     const tempCanvas = createGraphics(SIZE, SIZE);
     tempCanvas.background(255);
     shapes.forEach(s => {
@@ -235,11 +267,7 @@
         else if (s.t === 'triangle') tempCanvas.triangle(s.x + s.w/2, s.y, s.x, s.y + s.h, s.x + s.w, s.y + s.h);
       }
     });
-    
-    edges2pikachu.transfer(tempCanvas.elt, (result) => { 
-      document.getElementById('output').innerHTML = `<img src="${result.src}">`; 
-      tempCanvas.remove(); 
-    });
+    edges2pikachu.transfer(tempCanvas.elt, (result) => { document.getElementById('output').innerHTML = `<img src="${result.src}">`; tempCanvas.remove(); });
   }
 </script>
 </body>
