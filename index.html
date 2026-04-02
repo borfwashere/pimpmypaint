@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>pimpmypaint</title>
+  <title>pimpmypaint - Mobile Edition</title>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.1.2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.1/p5.min.js"></script>
   <script src="./utils.js"></script>
@@ -67,6 +67,7 @@
       flex-direction: row;
     }
 
+    /* Ajuste para móviles: apilar los lienzos */
     @media (max-width: 600px) {
       .workspace { flex-direction: column; align-items: center; padding: 5px; overflow-y: auto; max-height: 70vh; }
       .window { width: 98vw; }
@@ -93,7 +94,8 @@
 
 <div class="window">
   <div class="title-bar">
-    <span>pimpmypaint 3.2</span>
+    <span>pimpmypaint v3.2 - Mobile</span>
+    <div style="display:flex; gap:2px;"><button style="padding:0 3px;">X</button></div>
   </div>
 
   <div class="toolbar-main">
@@ -137,7 +139,7 @@
   </div>
 
   <div class="status-bar">
-    <span>v3.2</span>
+    <span>Mobile Ready</span>
   </div>
 </div>
 
@@ -243,11 +245,12 @@
     playDrawingNote();
   }
 
+  // --- COMPATIBILIDAD TOUCH ---
   function touchStarted() {
     if (mouseX > 0 && mouseX < SIZE && mouseY > 0 && mouseY < SIZE) {
       startX = mouseX; startY = mouseY; isDragging = true;
       if(currentTool === 'brush' || currentTool === 'eraser') addPoint();
-      return false;
+      return false; // Previene scroll
     }
   }
 
@@ -273,6 +276,7 @@
     }
   }
 
+  // Redirigir mouse a touch para evitar duplicidad o problemas
   function mousePressed() { touchStarted(); }
   function mouseDragged() { touchMoved(); }
   function mouseReleased() { touchEnded(); }
