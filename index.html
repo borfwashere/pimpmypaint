@@ -2,8 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>pimpmypaint 3.2</title>
+  <title>pimpmypaint</title>
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.1.2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.1/p5.min.js"></script>
   <script src="./utils.js"></script>
@@ -11,72 +10,108 @@
 
   <style>
     :root { --win-bg: #008080; --win-gray: #c0c0c0; --win-blue: #000080; --win-light: #ffffff; --win-shadow: #808080; }
+    
     * { user-select: none; -webkit-user-drag: none; cursor: default; }
-    body { background: var(--win-bg); font-family: "MS Sans Serif", Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow: hidden; touch-action: none; }
-    .window { background: var(--win-gray); border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); width: 95vw; max-width: 940px; padding: 2px; box-shadow: 2px 2px 10px rgba(0,0,0,0.5); }
-    .title-bar { background: var(--win-blue); color: white; padding: 3px 6px; font-weight: bold; font-size: 13px; }
-    .toolbar-main { display: flex; align-items: center; gap: 8px; padding: 8px; border-bottom: 2px solid var(--win-shadow); background: #d6d6d6; flex-wrap: wrap; }
+    
+    body { 
+      background: var(--win-bg); 
+      font-family: "MS Sans Serif", Arial, sans-serif; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center; 
+      height: 100vh; 
+      margin: 0; 
+      overflow: hidden; 
+    }
+    
+    .window { 
+      background: var(--win-gray); 
+      border: 2px solid; 
+      border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); 
+      width: 940px; 
+      padding: 2px; 
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.5); 
+    }
+    
+    .title-bar { background: var(--win-blue); color: white; padding: 3px 6px; display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; }
+    .toolbar-main { display: flex; align-items: center; gap: 12px; padding: 8px; border-bottom: 2px solid var(--win-shadow); background: #d6d6d6; flex-wrap: wrap; }
     .color-palette { display: flex; gap: 2px; border: 2px inset white; padding: 2px; background: #999; }
     .color-column { display: flex; flex-direction: column; gap: 2px; }
-    .color-swatch { width: 22px; height: 22px; border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); cursor: pointer; }
+    .color-swatch { width: 18px; height: 18px; border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); cursor: pointer; }
     .color-swatch.active { border-color: black; outline: 1px solid white; }
     .tool-group { display: flex; border: 2px inset white; padding: 2px; gap: 2px; background: var(--win-gray); }
     .tool-btn { width: 34px; height: 34px; border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); background: var(--win-gray); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
     .tool-btn.active { border-color: var(--win-shadow) var(--win-light) var(--win-light) var(--win-shadow); background: #e0e0e0; }
-    .control-panel { display: flex; align-items: center; gap: 5px; border: 1px inset white; padding: 4px; background: var(--win-gray); font-size: 10px; }
-    .control-panel input[type="number"] { width: 35px; }
-    .workspace { display: flex; gap: 10px; padding: 10px; justify-content: center; }
-    @media (max-width: 600px) {
-      .workspace { flex-direction: column; align-items: center; padding: 5px; }
-      .window { width: 98vw; }
-      .toolbar-main { justify-content: center; }
-    }
-    .sub-window { background: var(--win-gray); border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); width: 266px; }
+    .control-panel { display: flex; align-items: center; gap: 8px; border: 1px inset white; padding: 4px 8px; background: var(--win-gray); font-size: 11px; }
+    .workspace { display: flex; gap: 15px; padding: 15px; justify-content: center; }
+    .sub-window { background: var(--win-gray); border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); width: 270px; }
     .sub-title { background: #808080; color: white; font-size: 11px; padding: 2px 5px; font-weight: bold; }
-    #canvasContainer, #output { width: 256px; height: 256px; background: white; border: 2px inset white; margin: 3px auto; overflow: hidden; position: relative;}
+    #canvasContainer, #output { width: 256px; height: 256px; background: white; border: 2px inset white; margin: 5px auto; overflow: hidden; position: relative;}
     #output img { width: 256px; height: 256px; }
-    .status-bar { border-top: 1px solid var(--win-shadow); padding: 2px 5px; font-size: 11px; display: flex; justify-content: flex-end; height: 16px; }
-    button.win98-btn { padding: 4px 8px; font-family: "MS Sans Serif"; font-size: 11px; background: var(--win-gray); border: 2px solid; border-color: white #808080 #808080 white; cursor: pointer; touch-action: manipulation; }
+    
+    /* Barra de estado con solo versión a la derecha */
+    .status-bar { 
+      border-top: 1px solid var(--win-shadow); 
+      padding: 2px 5px; 
+      font-size: 11px; 
+      display: flex; 
+      justify-content: flex-end; 
+      height: 16px;
+    }
+
+    button.win98-btn { padding: 4px 12px; font-family: "MS Sans Serif"; font-size: 11px; background: var(--win-gray); border: 2px solid; border-color: white #808080 #808080 white; cursor: pointer; }
     .music-btn { background: #ff00ff !important; color: white; font-weight: bold; }
   </style>
+
+  <script>
+    // PROTOCOLO DE SEGURIDAD
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.onkeydown = function(e) {
+      if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && (e.keyCode == 73 || e.keyCode == 74)) || (e.ctrlKey && e.keyCode == 85)) return false;
+    };
+  </script>
 </head>
 <body>
 
 <div class="window">
-  <div class="title-bar"><span>pimpmypaint 3.2</span></div>
+  <div class="title-bar">
+    <span>pimpmypaint</span>
+    <div style="display:flex; gap:2px;"><button style="padding:0 3px;">X</button></div>
+  </div>
 
   <div class="toolbar-main">
     <div class="color-palette">
       <div class="color-column">
-        <div class="color-swatch active" id="sw-black" onpointerdown="setColor('#000000', 'sw-black')" style="background:#000000"></div>
-        <div class="color-swatch" id="sw-red" onpointerdown="setColor('#ff0000', 'sw-red')" style="background:#ff0000"></div>
+        <div class="color-swatch active" id="sw-black" onclick="setColor('#000000', 'sw-black')" style="background:#000000"></div>
+        <div class="color-swatch" id="sw-red" onclick="setColor('#ff0000', 'sw-red')" style="background:#ff0000"></div>
       </div>
       <div class="color-column">
-        <div class="color-swatch" id="sw-blue" onpointerdown="setColor('#0000ff', 'sw-blue')" style="background:#0000ff"></div>
-        <div class="color-swatch" id="sw-green" onpointerdown="setColor('#00ff00', 'sw-green')" style="background:#00ff00"></div>
+        <div class="color-swatch" id="sw-blue" onclick="setColor('#0000ff', 'sw-blue')" style="background:#0000ff"></div>
+        <div class="color-swatch" id="sw-green" onclick="setColor('#00ff00', 'sw-green')" style="background:#00ff00"></div>
       </div>
-      <div class="color-column"><div class="color-swatch" id="sw-white" onpointerdown="setColor('#ffffff', 'sw-white')" style="background:#ffffff"></div></div>
+      <div class="color-column"><div class="color-swatch" id="sw-white" onclick="setColor('#ffffff', 'sw-white')" style="background:#ffffff"></div></div>
     </div>
 
     <div class="tool-group">
-      <button class="tool-btn active" id="btn-rect" onpointerdown="setTool('rect')">⬜</button>
-      <button class="tool-btn" id="btn-circle" onpointerdown="setTool('circle')">⚪</button>
-      <button class="tool-btn" id="btn-triangle" onpointerdown="setTool('triangle')">▲</button>
-      <button class="tool-btn" id="btn-brush" onpointerdown="setTool('brush')">🖌️</button>
-      <button class="tool-btn" id="btn-eraser" onpointerdown="activateEraser()">🧹</button>
+      <button class="tool-btn active" id="btn-rect" onclick="setTool('rect')">⬜</button>
+      <button class="tool-btn" id="btn-circle" onclick="setTool('circle')">⚪</button>
+      <button class="tool-btn" id="btn-triangle" onclick="setTool('triangle')">▲</button>
+      <button class="tool-btn" id="btn-brush" onclick="setTool('brush')">🖌️</button>
+      <button class="tool-btn" id="btn-eraser" onclick="activateEraser()">🧹</button>
     </div>
 
     <div class="control-panel">
       <label>Grosor:</label>
       <input type="number" id="globalSize" value="3" min="1" max="25">
+      <label>| Borde:</label>
       <input type="checkbox" id="hasBorder" checked onclick="toggleBorder()">
       <input type="color" id="borderColor" value="#000000">
     </div>
     
-    <div style="display:flex; gap:3px; flex-grow:1; justify-content: flex-end;">
-        <button id="musicToggle" onpointerdown="toggleMusic(event)" class="win98-btn music-btn">🎵 OFF</button>
-        <button onpointerdown="renderPikachu(event)" class="win98-btn" style="font-weight: bold; background: #ffff00 !important;">GO!</button>
-        <button onpointerdown="clearCanvas()" class="win98-btn">CLR</button>
+    <div style="display:flex; gap:5px; margin-left: auto;">
+        <button id="musicToggle" onclick="toggleMusic()" class="win98-btn music-btn">MUSIC: OFF</button>
+        <button onclick="renderPikachu()" class="win98-btn" style="font-weight: bold; background: #ffff00 !important;">TRANSFORMAR!</button>
+        <button onclick="clearCanvas()" class="win98-btn">LIMPIAR</button>
     </div>
   </div>
 
@@ -85,7 +120,9 @@
     <div class="sub-window"><div class="sub-title">Salida</div><div id="output"></div></div>
   </div>
 
-  <div class="status-bar"><span>v3.2</span></div>
+  <div class="status-bar">
+    <span>v3.2</span>
+  </div>
 </div>
 
 <script>
@@ -95,23 +132,28 @@
   const SIZE = 256;
   let globalHasBorder = true;
 
-  // --- AUDIO FIX ---
-  let audioCtx = null, isPlaying = false, masterGain = null; 
+  // --- AUDIO ---
+  let audioCtx = null;
+  let isPlaying = false;
+  let masterGain = null; 
   const scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
 
-  function toggleMusic(e) {
-    if(e) e.preventDefault();
+  function toggleMusic() {
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         masterGain = audioCtx.createGain();
         masterGain.gain.setValueAtTime(0.1, audioCtx.currentTime); 
         masterGain.connect(audioCtx.destination);
     }
-    audioCtx.resume().then(() => {
-        isPlaying = !isPlaying;
-        document.getElementById('musicToggle').innerText = isPlaying ? "🎵 ON" : "🎵 OFF";
-        if (isPlaying) playBaseMelody();
-    });
+    if (!isPlaying) {
+      isPlaying = true;
+      document.getElementById('musicToggle').innerText = "MUSIC: ON";
+      audioCtx.resume();
+      playBaseMelody();
+    } else {
+      isPlaying = false;
+      document.getElementById('musicToggle').innerText = "MUSIC: OFF";
+    }
   }
 
   function playBaseMelody() {
@@ -145,7 +187,7 @@
     osc.stop(audioCtx.currentTime + duration);
   }
 
-  // --- LÓGICA DE DIBUJO ---
+  // --- LÓGICA ---
   function setup() {
     const canvas = createCanvas(SIZE, SIZE);
     canvas.parent('canvasContainer');
@@ -167,14 +209,16 @@
       }
     });
 
-    if (isDragging && currentTool !== 'brush' && currentTool !== 'eraser') {
+    if (isDragging) {
       let sz = parseInt(document.getElementById('globalSize').value);
-      if (globalHasBorder) { stroke(document.getElementById('borderColor').value); strokeWeight(sz); } else { noStroke(); }
-      fill(currentColor);
-      let w = mouseX - startX, h = mouseY - startY;
-      if (currentTool === 'rect') rect(startX, startY, w, h);
-      else if (currentTool === 'circle') ellipse(startX + w/2, startY + h/2, w, h);
-      else if (currentTool === 'triangle') triangle(startX + w/2, startY, startX, startY + h, startX + w, startY + h);
+      if (currentTool !== 'brush' && currentTool !== 'eraser') {
+        if (globalHasBorder) { stroke(document.getElementById('borderColor').value); strokeWeight(sz); } else { noStroke(); }
+        fill(currentColor);
+        let w = mouseX - startX, h = mouseY - startY;
+        if (currentTool === 'rect') rect(startX, startY, w, h);
+        else if (currentTool === 'circle') ellipse(startX + w/2, startY + h/2, w, h);
+        else if (currentTool === 'triangle') triangle(startX + w/2, startY, startX, startY + h, startX + w, startY + h);
+      }
     }
   }
 
@@ -187,48 +231,28 @@
     playDrawingNote();
   }
 
-  function touchStarted() {
-    if (mouseX > 0 && mouseX < SIZE && mouseY > 0 && mouseY < SIZE) {
-      startX = mouseX; startY = mouseY; isDragging = true;
-      if(currentTool === 'brush' || currentTool === 'eraser') addPoint();
-      return false;
-    }
+  function mousePressed() { if (mouseX > 0 && mouseX < SIZE && mouseY > 0 && mouseY < SIZE) { startX = mouseX; startY = mouseY; isDragging = true; if(currentTool === 'brush' || currentTool === 'eraser') addPoint(); } }
+  function mouseDragged() { if (isDragging && (currentTool === 'brush' || currentTool === 'eraser')) addPoint(); }
+  function mouseReleased() { 
+    if (isDragging && currentTool !== 'brush' && currentTool !== 'eraser') { 
+      shapes.push({
+        x: startX, y: startY, w: mouseX - startX, h: mouseY - startY, 
+        c: currentColor, t: currentTool, hasB: globalHasBorder, 
+        bc: document.getElementById('borderColor').value, 
+        bw: parseInt(document.getElementById('globalSize').value)
+      }); 
+      playDrawingNote(); 
+    } 
+    isDragging = false; 
   }
-
-  function touchMoved() {
-    if (isDragging) {
-      if(currentTool === 'brush' || currentTool === 'eraser') addPoint();
-      return false;
-    }
-  }
-
-  function touchEnded() {
-    if (isDragging) {
-      if (currentTool !== 'brush' && currentTool !== 'eraser') { 
-        shapes.push({
-          x: startX, y: startY, w: mouseX - startX, h: mouseY - startY, 
-          c: currentColor, t: currentTool, hasB: globalHasBorder, 
-          bc: document.getElementById('borderColor').value, 
-          bw: parseInt(document.getElementById('globalSize').value)
-        }); 
-        playDrawingNote(); 
-      } 
-      isDragging = false;
-    }
-  }
-
-  function mousePressed() { touchStarted(); }
-  function mouseDragged() { touchMoved(); }
-  function mouseReleased() { touchEnded(); }
-
+  
   function setColor(c, id) { currentColor = c; document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
   function setTool(t) { currentTool = t; document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active')); document.getElementById('btn-' + t).classList.add('active'); }
   function toggleBorder() { globalHasBorder = document.getElementById('hasBorder').checked; }
   function activateEraser() { setTool('eraser'); }
   function clearCanvas() { shapes = []; document.getElementById('output').innerHTML = ''; }
 
-  async function renderPikachu(e) {
-    if(e) e.preventDefault();
+  async function renderPikachu() {
     if (!modelReady) return;
     const tempCanvas = createGraphics(SIZE, SIZE);
     tempCanvas.background(255);
@@ -243,10 +267,7 @@
         else if (s.t === 'triangle') tempCanvas.triangle(s.x + s.w/2, s.y, s.x, s.y + s.h, s.x + s.w, s.y + s.h);
       }
     });
-    edges2pikachu.transfer(tempCanvas.elt, (result) => { 
-        document.getElementById('output').innerHTML = `<img src="${result.src}">`; 
-        tempCanvas.remove(); 
-    });
+    edges2pikachu.transfer(tempCanvas.elt, (result) => { document.getElementById('output').innerHTML = `<img src="${result.src}">`; tempCanvas.remove(); });
   }
 </script>
 </body>
