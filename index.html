@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <link rel="icon" href="data:,">
   
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-eval' 'unsafe-inline' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com; connect-src 'self' https://cdn.jsdelivr.net blob: data:; img-src 'self' data: blob:; style-src 'self' 'unsafe-inline';">
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'unsafe-inline' 'unsafe-eval' data: blob:; script-src * 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src * 'unsafe-inline' 'unsafe-eval' data: blob:; img-src * data: blob:; style-src * 'unsafe-inline';">
 
   <title>pimpmypaint 3.2</title>
   
@@ -16,27 +16,34 @@
 
   <style>
     :root { --win-bg: #008080; --win-gray: #c0c0c0; --win-blue: #000080; --win-light: #ffffff; --win-shadow: #808080; }
-    * { user-select: none; -webkit-user-drag: none; cursor: default; touch-action: none; }
-    body { background: var(--win-bg); font-family: "MS Sans Serif", Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow-x: hidden; }
+    * { user-select: none; -webkit-user-drag: none; cursor: default; touch-action: none; box-sizing: border-box; }
+    body { background: var(--win-bg); font-family: "MS Sans Serif", Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow: hidden; }
+    
     .window { background: var(--win-gray); border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); width: 940px; max-width: 98vw; padding: 2px; box-shadow: 2px 2px 10px rgba(0,0,0,0.5); }
     .title-bar { background: var(--win-blue); color: white; padding: 3px 6px; display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; }
+    
     .toolbar-main { display: flex; align-items: center; gap: 8px; padding: 8px; border-bottom: 2px solid var(--win-shadow); background: #d6d6d6; flex-wrap: wrap; }
     .color-palette { display: flex; gap: 2px; border: 2px inset white; padding: 2px; background: #999; }
     .color-column { display: flex; flex-direction: column; gap: 2px; }
     .color-swatch { width: 18px; height: 18px; border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); cursor: pointer; }
     .color-swatch.active { border-color: black; outline: 1px solid white; }
+    
     .tool-group { display: flex; border: 2px inset white; padding: 2px; gap: 2px; background: var(--win-gray); }
     .tool-btn { width: 34px; height: 34px; border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); background: var(--win-gray); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
     .tool-btn.active { border-color: var(--win-shadow) var(--win-light) var(--win-light) var(--win-shadow); background: #e0e0e0; }
+    
     .control-panel { display: flex; align-items: center; gap: 5px; border: 1px inset white; padding: 4px; background: var(--win-gray); font-size: 10px; }
     .workspace { display: flex; gap: 15px; padding: 15px; justify-content: center; flex-wrap: wrap; }
     .sub-window { background: var(--win-gray); border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); width: 270px; }
     .sub-title { background: #808080; color: white; font-size: 11px; padding: 2px 5px; font-weight: bold; }
+    
     #canvasContainer, #output { width: 256px; height: 256px; background: white; border: 2px inset white; margin: 5px auto; overflow: hidden; position: relative;}
-    #output img { width: 256px; height: 256px; }
+    #output img { width: 256px; height: 256px; display: block; }
+    
     button.win98-btn { padding: 4px 12px; font-family: "MS Sans Serif"; font-size: 11px; background: var(--win-gray); border: 2px solid; border-color: white #808080 #808080 white; cursor: pointer; }
     .music-btn { background: #ff00ff !important; color: white; font-weight: bold; }
-    @media (max-width: 600px) { .workspace { flex-direction: column; align-items: center; } .toolbar-main { justify-content: center; } body { overflow-y: auto; align-items: flex-start; } }
+    
+    @media (max-width: 600px) { .workspace { flex-direction: column; align-items: center; padding: 5px; } .toolbar-main { justify-content: center; } body { overflow-y: auto; align-items: flex-start; } }
   </style>
 </head>
 <body>
@@ -85,13 +92,14 @@
 </div>
 
 <script>
+  // Variables Globales
   let edges2pikachu, modelReady = false;
   let currentColor = '#000000', currentTool = 'rect', shapes = [];
   let isDragging = false, startX, startY;
   const SIZE = 256;
   let globalHasBorder = true;
 
-  // --- AUDIO ---
+  // --- AUDIO ENGINE ---
   let audioCtx = null, isPlaying = false, masterGain = null; 
   const scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
 
@@ -139,12 +147,17 @@
     osc.start(); osc.stop(audioCtx.currentTime + duration);
   }
 
-  // --- DIBUJO P5 ---
+  // --- LÓGICA DE DIBUJO (p5.js) ---
   function setup() {
     const canvas = createCanvas(SIZE, SIZE);
     canvas.parent('canvasContainer');
     background(255);
-    edges2pikachu = new Pix2pix('./models/edges2pikachu_AtoB.pict', () => { modelReady = true; });
+    
+    // Inicialización de Pix2Pix
+    edges2pikachu = new Pix2pix('./models/edges2pikachu_AtoB.pict', () => { 
+      modelReady = true; 
+      console.log("IA Lista para transformar.");
+    });
   }
 
   function draw() {
@@ -185,23 +198,30 @@
   function mouseDragged() { if (isDragging && (currentTool === 'brush' || currentTool === 'eraser')) addPoint(); }
   function mouseReleased() { 
     if (isDragging && currentTool !== 'brush' && currentTool !== 'eraser') { 
-      shapes.push({ x: startX, y: startY, w: mouseX - startX, h: mouseY - startY, c: currentColor, t: currentTool, hasB: globalHasBorder, bc: document.getElementById('borderColor').value, bw: parseInt(document.getElementById('globalSize').value)}); 
+      shapes.push({ 
+        x: startX, y: startY, w: mouseX - startX, h: mouseY - startY, 
+        c: currentColor, t: currentTool, hasB: globalHasBorder, 
+        bc: document.getElementById('borderColor').value, 
+        bw: parseInt(document.getElementById('globalSize').value)
+      }); 
       playDrawingNote(); 
     } 
     isDragging = false; 
   }
 
+  // Soporte táctil
   function touchStarted() { mousePressed(); return false; }
   function touchMoved() { mouseDragged(); return false; }
   function touchEnded() { mouseReleased(); return false; }
   
+  // Controles UI
   function setColor(c, id) { currentColor = c; document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
   function setTool(t) { currentTool = t; document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active')); document.getElementById('btn-' + t).classList.add('active'); }
   function toggleBorder() { globalHasBorder = document.getElementById('hasBorder').checked; }
   function clearCanvas() { shapes = []; document.getElementById('output').innerHTML = ''; background(255); }
 
   async function renderPikachu() {
-    if (!modelReady) return;
+    if (!modelReady) { alert("Cargando cerebro de IA..."); return; }
     const tempCanvas = createGraphics(SIZE, SIZE);
     tempCanvas.background(255);
     shapes.forEach(s => {
@@ -215,7 +235,11 @@
         else if (s.t === 'triangle') tempCanvas.triangle(s.x + s.w/2, s.y, s.x, s.y + s.h, s.x + s.w, s.y + s.h);
       }
     });
-    edges2pikachu.transfer(tempCanvas.elt, (result) => { document.getElementById('output').innerHTML = `<img src="${result.src}">`; tempCanvas.remove(); });
+    
+    edges2pikachu.transfer(tempCanvas.elt, (result) => { 
+      document.getElementById('output').innerHTML = `<img src="${result.src}">`; 
+      tempCanvas.remove(); 
+    });
   }
 </script>
 </body>
