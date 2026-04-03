@@ -2,8 +2,12 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>pimpmypaint 3.2.3 - Full Restore</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="mobile-web-app-capable" content="yes">
+  
+  <title>pimpmypaint - Mobile Ready</title>
   
   <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@1.1.2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/0.6.1/p5.min.js"></script>
@@ -12,93 +16,128 @@
 
   <style>
     :root { --win-bg: #008080; --win-gray: #c0c0c0; --win-blue: #000080; --win-light: #ffffff; --win-shadow: #808080; }
-    * { user-select: none; -webkit-user-drag: none; cursor: default; box-sizing: border-box; touch-action: none; }
-    body { background: var(--win-bg); font-family: "MS Sans Serif", Arial, sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; overflow: hidden; overscroll-behavior: none; }
     
-    .window { background: var(--win-gray); border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); width: 95%; max-width: 940px; padding: 2px; box-shadow: 2px 2px 10px rgba(0,0,0,0.5); }
-    .title-bar { background: var(--win-blue); color: white; padding: 3px 6px; display: flex; justify-content: space-between; font-weight: bold; font-size: 13px; }
+    * { 
+      user-select: none; 
+      -webkit-user-drag: none; 
+      -webkit-tap-highlight-color: transparent; 
+      touch-action: none; 
+      box-sizing: border-box; 
+    }
     
-    .toolbar-main { display: flex; align-items: center; gap: 8px; padding: 8px; border-bottom: 2px solid var(--win-shadow); background: #d6d6d6; flex-wrap: wrap; }
+    body { 
+      background: var(--win-bg); 
+      font-family: "MS Sans Serif", Arial, sans-serif; 
+      display: flex; justify-content: center; align-items: center; 
+      height: 100vh; margin: 0; overflow: hidden; padding: 5px;
+    }
     
+    .window { 
+      background: var(--win-gray); border: 2px solid; 
+      border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); 
+      width: 100%; max-width: 900px; padding: 2px; box-shadow: 2px 2px 10px rgba(0,0,0,0.5); 
+    }
+    
+    .title-bar { background: var(--win-blue); color: white; padding: 3px 6px; font-weight: bold; font-size: 12px; }
+    
+    .toolbar-main { 
+        display: flex; flex-wrap: wrap; align-items: center; gap: 8px; 
+        padding: 5px; border-bottom: 2px solid var(--win-shadow); background: #d6d6d6; justify-content: center;
+    }
+
     .color-palette { display: flex; gap: 2px; border: 2px inset white; padding: 2px; background: #999; }
-    .color-column { display: flex; flex-direction: column; gap: 2px; }
-    .color-swatch { width: 18px; height: 18px; border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); cursor: pointer; }
-    .color-swatch.active { border-color: black; outline: 1px solid white; }
-    
-    .tool-group { display: flex; border: 2px inset white; padding: 2px; gap: 2px; background: var(--win-gray); }
-    .tool-btn { width: 34px; height: 34px; border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); background: var(--win-gray); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 16px; }
+    .color-swatch { width: 22px; height: 22px; border: 1px solid #000; cursor: pointer; }
+    .color-swatch.active { outline: 2px solid white; border: 1px solid black; }
+
+    .tool-group { display: flex; border: 2px inset white; padding: 2px; gap: 2px; background: var(--win-gray); align-items: center; }
+    .tool-btn { width: 34px; height: 34px; border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); background: var(--win-gray); display: flex; align-items: center; justify-content: center; font-size: 16px; }
     .tool-btn.active { border-color: var(--win-shadow) var(--win-light) var(--win-light) var(--win-shadow); background: #e0e0e0; }
-    
-    .control-panel { display: flex; align-items: center; gap: 5px; border: 1px inset white; padding: 4px; background: var(--win-gray); font-size: 10px; }
-    .workspace { display: flex; gap: 15px; padding: 15px; justify-content: center; flex-wrap: wrap; overflow-y: auto; max-height: 70vh; }
-    
-    .sub-window { background: var(--win-gray); border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); width: 270px; }
+
+    .size-control { display: flex; align-items: center; gap: 4px; font-size: 11px; padding: 0 6px; border-left: 1px solid var(--win-shadow); height: 30px; }
+    .size-control input { width: 40px; height: 22px; font-family: "MS Sans Serif"; font-size: 11px; border: 2px inset white; text-align: center; }
+
+    .workspace { display: flex; gap: 10px; padding: 10px; justify-content: center; overflow-y: auto; max-height: 75vh; }
+    .sub-window { background: var(--win-gray); border: 2px solid; border-color: var(--win-light) var(--win-shadow) var(--win-shadow) var(--win-light); flex: 0 0 256px; }
     .sub-title { background: #808080; color: white; font-size: 11px; padding: 2px 5px; font-weight: bold; }
     
-    #canvasContainer, #output { width: 256px; height: 256px; background: white; border: 2px inset white; margin: 5px auto; overflow: hidden; position: relative;}
+    #canvasContainer, #output { width: 256px; height: 256px; background: white; border: 2px inset white; margin: 5px auto; position: relative; }
     #output img { width: 256px; height: 256px; }
-    
-    button.win98-btn { padding: 4px 12px; font-family: "MS Sans Serif"; font-size: 11px; background: var(--win-gray); border: 2px solid; border-color: white #808080 #808080 white; cursor: pointer; }
+
+    .win98-btn { font-family: "MS Sans Serif"; font-size: 11px; background: var(--win-gray); border: 2px solid; border-color: white #808080 #808080 white; height: 34px; padding: 0 10px; }
     .music-btn { background: #ff00ff !important; color: white; font-weight: bold; }
-    .status-bar { border-top: 1px solid var(--win-shadow); padding: 2px 5px; font-size: 11px; display: flex; justify-content: flex-end; }
+    .go-btn { font-weight: bold; background: #ffff00 !important; font-size: 18px; min-width: 45px; }
+
+    /* Efecto de parpadeo (Blink) */
+    .blink-click { animation: blink 0.15s steps(2, start) 2; }
+    @keyframes blink { to { visibility: hidden; background: white !important; color: black !important; } }
+
+    @media (max-width: 768px) {
+        body { align-items: flex-start; overflow-y: auto; }
+        .window { max-width: 300px; margin-top: 10px; }
+        .toolbar-main { gap: 4px; padding: 4px; }
+        .workspace { flex-direction: column; align-items: center; padding: 5px; overflow-y: visible; max-height: none; }
+        .size-control { border-left: none; padding: 0; }
+        .win98-btn { height: 30px; font-size: 10px; }
+    }
   </style>
 </head>
 <body>
 
 <div class="window">
-  <div class="title-bar"><span>pimpmypaint 3.2.3</span><button style="padding:0 3px;">X</button></div>
+  <div class="title-bar"><span>pimpmypaint</span></div>
 
   <div class="toolbar-main">
     <div class="color-palette">
-      <div class="color-column">
-        <div class="color-swatch active" id="sw-black" onclick="setColor('#000000', 'sw-black')" style="background:#000000"></div>
-        <div class="color-swatch" id="sw-red" onclick="setColor('#ff0000', 'sw-red')" style="background:#ff0000"></div>
-      </div>
-      <div class="color-column">
-        <div class="color-swatch" id="sw-blue" onclick="setColor('#0000ff', 'sw-blue')" style="background:#0000ff"></div>
-        <div class="color-swatch" id="sw-green" onclick="setColor('#00ff00', 'sw-green')" style="background:#00ff00"></div>
-      </div>
-      <div class="color-column">
-        <div class="color-swatch" id="sw-white" onclick="setColor('#ffffff', 'sw-white')" style="background:#ffffff"></div>
-      </div>
+      <div class="color-swatch active" id="sw-black" onclick="setColor('#000000', 'sw-black')" style="background:#000000"></div>
+      <div class="color-swatch" id="sw-red" onclick="setColor('#ff0000', 'sw-red')" style="background:#ff0000"></div>
+      <div class="color-swatch" id="sw-blue" onclick="setColor('#0000ff', 'sw-blue')" style="background:#0000ff"></div>
+      <div class="color-swatch" id="sw-green" onclick="setColor('#00ff00', 'sw-green')" style="background:#00ff00"></div>
+      <div class="color-swatch" id="sw-white" onclick="setColor('#ffffff', 'sw-white')" style="background:#ffffff"></div>
     </div>
 
     <div class="tool-group">
       <button class="tool-btn active" id="btn-rect" onclick="setTool('rect')">⬜</button>
       <button class="tool-btn" id="btn-circle" onclick="setTool('circle')">⚪</button>
       <button class="tool-btn" id="btn-triangle" onclick="setTool('triangle')">▲</button>
-      <button class="tool-btn" id="btn-brush" onclick="setTool('brush')">🖌️</button>
-      <button class="tool-btn" id="btn-eraser" onclick="setTool('eraser')">🧹</button>
     </div>
 
-    <div class="control-panel">
-      <label>Grosor: <input type="number" id="globalSize" value="3" min="1" max="25" style="width:35px"></label>
-      <label>| Borde: <input type="checkbox" id="hasBorder" checked onclick="toggleBorder()"></label>
-      <input type="color" id="borderColor" value="#000000" style="width:20px;height:20px;padding:0;border:none;">
+    <div class="tool-group">
+      <button class="tool-btn" id="btn-brush" onclick="setTool('brush')">🖌️</button>
+      <button class="tool-btn" id="btn-eraser" onclick="activateEraser()">🧹</button>
+      <div class="size-control">
+        <label>PX:</label>
+        <input type="number" id="inputSize" value="2" min="1" max="50" onchange="strokeWeightVal = parseInt(this.value)">
+      </div>
     </div>
-    
-    <div style="display:flex; gap:5px; margin-left: auto;">
-        <button id="musicToggle" onclick="toggleMusic()" class="win98-btn music-btn">MUSIC: OFF</button>
-        <button onclick="renderPikachu()" class="win98-btn" style="background: #ffff00 !important; font-weight: bold;">TRANSFORMAR!</button>
-        <button onclick="clearCanvas()" class="win98-btn">LIMPIAR</button>
+
+    <div style="display:flex; gap:2px;">
+        <button id="musicToggle" onclick="handleAction(this, toggleMusic)" class="win98-btn music-btn">🎵</button>
+        <button onclick="handleAction(this, renderPikachu)" class="win98-btn go-btn">→</button>
+        <button onclick="clearCanvas()" class="win98-btn">SUP</button>
     </div>
   </div>
 
   <div class="workspace">
-    <div class="sub-window"><div class="sub-title">Dibujo</div><div id="canvasContainer"></div></div>
-    <div class="sub-window"><div class="sub-title">Salida</div><div id="output"></div></div>
+    <div class="sub-window"><div class="sub-title">DIBUJO</div><div id="canvasContainer"></div></div>
+    <div class="sub-window"><div class="sub-title">SALIDA</div><div id="output"></div></div>
   </div>
-  <div class="status-bar"><span>v3.2.3</span></div>
 </div>
 
 <script>
   let edges2pikachu, modelReady = false;
   let currentColor = '#000000', currentTool = 'rect', shapes = [];
   let isDragging = false, startX, startY;
+  let strokeWeightVal = 2;
   const SIZE = 256;
-  let globalHasBorder = true;
 
-  // --- AUDIO ENGINE ---
+  // Función para Feedback de Parpadeo
+  function handleAction(btn, callback) {
+    btn.classList.add('blink-click');
+    setTimeout(() => btn.classList.remove('blink-click'), 300);
+    callback();
+  }
+
+  // --- AUDIO LOGIC ---
   let audioCtx = null, isPlaying = false, masterGain = null; 
   const scale = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25];
 
@@ -106,59 +145,53 @@
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         masterGain = audioCtx.createGain();
-        masterGain.gain.setValueAtTime(0.05, audioCtx.currentTime); 
+        masterGain.gain.setValueAtTime(0.1, audioCtx.currentTime); 
         masterGain.connect(audioCtx.destination);
     }
     isPlaying = !isPlaying;
-    document.getElementById('musicToggle').innerText = isPlaying ? "MUSIC: ON" : "MUSIC: OFF";
     if (isPlaying) { audioCtx.resume(); playBaseMelody(); }
   }
 
   function playBaseMelody() {
     if (!isPlaying) return;
-    masterGain.gain.setTargetAtTime(isDragging ? 0.15 : 0.05, audioCtx.currentTime, 0.1);
-    const freq = scale[Math.floor(Math.random() * scale.length)];
-    triggerSynth(freq, 'triangle', 0.3, 0.4, true); 
-    setTimeout(playBaseMelody, random([250, 500, 750])); 
+    masterGain.gain.setTargetAtTime(isDragging ? 0.22 : 0.08, audioCtx.currentTime, 0.1);
+    triggerSynth(scale[Math.floor(Math.random() * scale.length)], 'triangle', 0.5, 0.4, true); 
+    setTimeout(playBaseMelody, random([250, 500])); 
   }
 
   function playDrawingNote() {
     if (!isPlaying || !audioCtx) return;
     const noteIdx = Math.floor(map(mouseY, SIZE, 0, 0, scale.length - 1));
-    const freq = (scale[noteIdx] || 261.63) * 2; 
-    triggerSynth(freq, 'sine', 0.02, 0.1, false); 
+    triggerSynth(scale[noteIdx] * 2, 'sine', 0.01, 0.1, false); 
   }
 
   function triggerSynth(freq, type, vol, duration, isBackground) {
-    if(!audioCtx) return;
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    osc.type = type; osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
     gain.gain.setValueAtTime(0, audioCtx.currentTime);
-    gain.gain.linearRampToValueAtTime(vol, audioCtx.currentTime + 0.01);
+    gain.gain.linearRampToValueAtTime(vol, audioCtx.currentTime + 0.02);
     gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
     osc.connect(gain);
-    gain.connect(isBackground ? masterGain : audioCtx.destination);
+    if(isBackground) gain.connect(masterGain); else gain.connect(audioCtx.destination);
     osc.start(); osc.stop(audioCtx.currentTime + duration);
   }
 
-  // --- p5.js LOGIC ---
+  // --- P5 DRAWING LOGIC ---
   function setup() {
     const canvas = createCanvas(SIZE, SIZE);
     canvas.parent('canvasContainer');
     background(255);
-    noLoop(); 
     edges2pikachu = new Pix2pix('./models/edges2pikachu_AtoB.pict', () => { modelReady = true; });
   }
 
   function draw() {
     background(255);
     shapes.forEach(s => {
-      if (s.t === 'brush') { noStroke(); fill(s.c); ellipse(s.x, s.y, s.w, s.h); }
-      else if (s.t === 'eraser') { noStroke(); fill(255); rect(s.x, s.y, s.w, s.h); }
+      if (s.t === 'brush') { noStroke(); fill(s.c); ellipse(s.x, s.y, s.sw, s.sw); }
+      else if (s.t === 'eraser') { noStroke(); fill(255); rect(s.x, s.y, s.sw * 4, s.sw * 4); }
       else {
-        if (s.hasB) { stroke(s.bc); strokeWeight(s.bw); } else { noStroke(); }
+        stroke(0); strokeWeight(s.sw);
         fill(s.c);
         if (s.t === 'rect') rect(s.x, s.y, s.w, s.h);
         else if (s.t === 'circle') ellipse(s.x + s.w/2, s.y + s.h/2, s.w, s.h);
@@ -167,8 +200,7 @@
     });
 
     if (isDragging && currentTool !== 'brush' && currentTool !== 'eraser') {
-      let sz = parseInt(document.getElementById('globalSize').value);
-      if (globalHasBorder) { stroke(document.getElementById('borderColor').value); strokeWeight(sz); } else { noStroke(); }
+      stroke(0); strokeWeight(strokeWeightVal);
       fill(currentColor);
       let w = mouseX - startX, h = mouseY - startY;
       if (currentTool === 'rect') rect(startX, startY, w, h);
@@ -177,75 +209,51 @@
     }
   }
 
-  // --- INPUT HANDLERS ---
-  function handleStart() {
-    if (mouseX > 0 && mouseX < SIZE && mouseY > 0 && mouseY < SIZE) {
-      startX = mouseX; startY = mouseY; isDragging = true;
-      if(currentTool === 'brush' || currentTool === 'eraser') { addPoint(); playDrawingNote(); }
-      redraw();
+  function mousePressed() {
+    if (mouseX >= 0 && mouseX <= SIZE && mouseY >= 0 && mouseY <= SIZE) {
+        startX = mouseX; startY = mouseY; isDragging = true;
+        if(currentTool === 'brush' || currentTool === 'eraser') addPoint();
+        return false;
     }
   }
-
-  function handleMove() {
-    if (isDragging) {
-      if (currentTool === 'brush' || currentTool === 'eraser') { addPoint(); playDrawingNote(); }
-      redraw();
-    }
-  }
-
-  function handleEnd() {
-    if (isDragging && currentTool !== 'brush' && currentTool !== 'eraser') {
-      shapes.push({
-        x: startX, y: startY, w: mouseX - startX, h: mouseY - startY, 
-        c: currentColor, t: currentTool, hasB: globalHasBorder, 
-        bc: document.getElementById('borderColor').value, 
-        bw: parseInt(document.getElementById('globalSize').value)
-      });
+  function mouseDragged() { if (isDragging && (currentTool === 'brush' || currentTool === 'eraser')) addPoint(); return false; }
+  function mouseReleased() { 
+    if (isDragging && currentTool !== 'brush' && currentTool !== 'eraser') { 
+      shapes.push({ x: startX, y: startY, w: mouseX - startX, h: mouseY - startY, c: currentColor, t: currentTool, sw: strokeWeightVal }); 
       playDrawingNote();
-    }
-    isDragging = false;
-    redraw();
+    } 
+    isDragging = false; 
   }
 
-  function mousePressed() { handleStart(); }
-  function mouseDragged() { handleMove(); }
-  function mouseReleased() { handleEnd(); }
-  function touchStarted() { handleStart(); return false; }
-  function touchMoved() { handleMove(); return false; }
-  function touchEnded() { handleEnd(); return false; }
-
-  function addPoint() {
-    let sz = parseInt(document.getElementById('globalSize').value);
-    shapes.push({
-      x: mouseX, y: mouseY, w: (currentTool === 'eraser' ? 20 : sz), h: (currentTool === 'eraser' ? 20 : sz), 
-      c: (currentTool === 'eraser' ? '#ffffff' : currentColor), t: currentTool
-    });
+  function addPoint() { 
+    shapes.push({ 
+      x: mouseX, y: mouseY, t: currentTool, sw: (currentTool === 'eraser' ? strokeWeightVal : strokeWeightVal),
+      c: (currentTool === 'eraser' ? '#ffffff' : currentColor) 
+    }); 
+    playDrawingNote();
   }
 
   function setColor(c, id) { currentColor = c; document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active')); document.getElementById(id).classList.add('active'); }
   function setTool(t) { currentTool = t; document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active')); document.getElementById('btn-' + t).classList.add('active'); }
-  function toggleBorder() { globalHasBorder = document.getElementById('hasBorder').checked; }
-  function clearCanvas() { shapes = []; document.getElementById('output').innerHTML = ''; redraw(); }
+  function activateEraser() { setTool('eraser'); }
+  function clearCanvas() { shapes = []; document.getElementById('output').innerHTML = ''; }
 
   async function renderPikachu() {
-    if (!modelReady) return alert("Cargando IA...");
-    const tempCanvas = createGraphics(SIZE, SIZE);
-    tempCanvas.background(255);
+    if (!modelReady) return;
+    const pg = createGraphics(SIZE, SIZE);
+    pg.background(255);
     shapes.forEach(s => {
-      if (s.t === 'brush') { tempCanvas.noStroke(); tempCanvas.fill(s.c); tempCanvas.ellipse(s.x, s.y, s.w, s.h); }
-      else if (s.t === 'eraser') { tempCanvas.noStroke(); tempCanvas.fill(255); tempCanvas.rect(s.x, s.y, s.w, s.h); }
-      else {
-        if (s.hasB) { tempCanvas.stroke(s.bc); tempCanvas.strokeWeight(s.bw); } else { tempCanvas.noStroke(); }
-        tempCanvas.fill(s.c);
-        if (s.t === 'rect') tempCanvas.rect(s.x, s.y, s.w, s.h);
-        else if (s.t === 'circle') tempCanvas.ellipse(s.x + s.w/2, s.y + s.h/2, s.w, s.h);
-        else if (s.t === 'triangle') tempCanvas.triangle(s.x + s.w/2, s.y, s.x, s.y + s.h, s.x + s.w, s.y + s.h);
+      if (s.t === 'brush') { pg.noStroke(); pg.fill(s.c); pg.ellipse(s.x, s.y, s.sw, s.sw); }
+      else if (s.t === 'eraser') { pg.noStroke(); pg.fill(255); pg.rect(s.x, s.y, s.sw * 4, s.sw * 4); }
+      else { 
+        pg.stroke(0); pg.strokeWeight(s.sw); 
+        pg.fill(s.c);
+        if (s.t === 'rect') pg.rect(s.x, s.y, s.w, s.h); 
+        else if (s.t === 'circle') pg.ellipse(s.x + s.w/2, s.y + s.h/2, s.w, s.h); 
+        else if (s.t === 'triangle') pg.triangle(s.x + s.w/2, s.y, s.x, s.y + s.h, s.x + s.w, s.y + s.h);
       }
     });
-    edges2pikachu.transfer(tempCanvas.elt, (result) => { 
-      document.getElementById('output').innerHTML = `<img src="${result.src}">`; 
-      tempCanvas.remove(); 
-    });
+    edges2pikachu.transfer(pg.elt, (result) => { document.getElementById('output').innerHTML = `<img src="${result.src}">`; pg.remove(); });
   }
 </script>
 </body>
